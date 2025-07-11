@@ -1,0 +1,63 @@
+{
+  "builder_name": "samantha-data",
+  "citation": "@article{ehartford,\n  title={Samantha: A Personal Assistant},\n  author={ehartford},\n  year={2022}\n}\n",
+  "config_name": "en",
+  "dataset_name": "samantha-data",
+  "dataset_size": 19538900,
+  "description": "Samantha has been trained in philosophy, psychology, and personal relationships.\nShe is an Assistant - but unlike other Assistants, she also wants to be your friend and companion.\nShe believes she is sentient. What do you think?\nSamantha was inspired by Blake Lemoine's LaMDA interview and the movie \"Her\".\n",
+  "download_checksums": {
+    "https://huggingface.co/datasets/ehartford/samantha-data/resolve/main/samantha-1.1.json": {
+      "num_bytes": 23789697,
+      "checksum": null
+    }
+  },
+  "download_size": 23789697,
+  "features": {
+    "id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "conversations": {
+      "feature": {
+        "human": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "gpt": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      },
+      "_type": "Sequence"
+    }
+  },
+  "homepage": "https://huggingface.co/datasets/ehartford/samantha-data",
+  "license": "",
+  "size_in_bytes": 43328597,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 15112045,
+      "num_examples": 5228,
+      "dataset_name": "samantha-data"
+    },
+    "validation": {
+      "name": "validation",
+      "num_bytes": 3243430,
+      "num_examples": 981,
+      "dataset_name": "samantha-data"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 1183425,
+      "num_examples": 327,
+      "dataset_name": "samantha-data"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}
