@@ -1,84 +1,88 @@
-# process_emotions.py
+# aura_engine/process_emotions.py (v2.0 - Upgraded Model)
 #
-# This module contains the function for Layer 2 of the agent's memory: The Emotional Overlay.
-# It uses a pre-trained transformer model to perform sentiment analysis on a chunk of text.
+# This module has been upgraded to use a sophisticated, multi-label emotion
+# classification model, providing a much richer emotional analysis.
 
-# The 'pipeline' is a high-level helper from the transformers library that simplifies using models.
 from transformers import pipeline
+from typing import List, Dict
 
 # --- Global variable to hold the loaded model ---
-# We define this outside the function so that the model is loaded into memory only once.
-# This is a crucial optimization to prevent re-loading the large model on every function call.
-sentiment_pipeline = None
+# This ensures the model is loaded into memory only once.
+emotion_classifier = None
 
-def initialize_pipeline():
+def initialize_emotion_classifier():
     """
-    Initializes the sentiment analysis pipeline if it hasn't been already.
-    This function will be called automatically by get_emotional_overlay on its first run.
+    Initializes the emotion classification pipeline if it hasn't been already.
     """
-    global sentiment_pipeline
-    if sentiment_pipeline is None:
-        print("Initializing sentiment analysis model for the first time...")
-        # Load the specified model for sentiment analysis.
-        # The library handles downloading the model from the Hugging Face Hub on the first run.
-        sentiment_pipeline = pipeline(
-            "sentiment-analysis",
-            model="siebert/sentiment-roberta-large-english"
+    global emotion_classifier
+    if emotion_classifier is None:
+        print("Initializing multi-label emotion classification model...")
+        # On the first run, this will download the model from the Hugging Face Hub.
+        # Subsequent runs will use the cached version for offline operation.
+        emotion_classifier = pipeline(
+            task="text-classification",
+            model="SamLowe/roberta-base-go_emotions",
+            top_k=None  # Ensures all 28 emotion scores are returned
         )
-        print("Model initialized successfully.")
+        print("✅ Emotion classifier initialized successfully.")
 
-def get_emotional_overlay(text_chunk: str) -> dict:
+def get_emotional_overlay(text_chunk: str, threshold: float = 0.3) -> List[Dict]:
     """
-    Analyzes a chunk of text and returns its emotional sentiment.
+    Analyzes a chunk of text and returns a list of detected emotions
+    that exceed a given confidence threshold.
 
     Args:
         text_chunk (str): A string of text to be analyzed.
+        threshold (float): The confidence score threshold for including an emotion.
 
     Returns:
-        dict: A dictionary containing the 'label' (e.g., 'POSITIVE') and 'score' (a float).
-              Returns an error dictionary if the input is invalid.
+        List[Dict]: A list of dictionaries, where each dictionary contains
+                    an emotion 'label' and its 'score'. Returns an empty
+                    list if the input is invalid or no emotions meet the threshold.
     """
     # Ensure the model pipeline is initialized before proceeding.
-    initialize_pipeline()
+    initialize_emotion_classifier()
 
     if not isinstance(text_chunk, str) or not text_chunk.strip():
-        return {'label': 'ERROR', 'score': 0.0, 'message': 'Input must be a non-empty string.'}
+        return []
 
-    # Run the text through the sentiment analysis pipeline.
-    # The result is typically a list containing one dictionary.
     try:
-        result = sentiment_pipeline(text_chunk)
-        # We return the first (and only) dictionary from the list.
-        return result[0]
+        # The model returns a list containing one list of results
+        model_output = emotion_classifier(text_chunk)
+        
+        # Filter the results to only include emotions above the threshold
+        detected_emotions = [
+            emotion for emotion in model_output[0]
+            if emotion['score'] > threshold
+        ]
+        
+        # Sort by score in descending order
+        detected_emotions.sort(key=lambda x: x['score'], reverse=True)
+        
+        return detected_emotions
+        
     except Exception as e:
-        return {'label': 'ERROR', 'score': 0.0, 'message': str(e)}
+        print(f"❌ Error during emotion analysis: {e}")
+        return [{'label': 'error', 'score': 1.0}]
 
 
 # --- Example Usage (for testing purposes) ---
 if __name__ == "__main__":
-    print("--- Testing Layer 2: The Emotional Overlay Engine ---")
+    print("--- Testing Upgraded Emotion Overlay Engine ---")
 
-    # 1. Define some test sentences
-    positive_text = "This is a wonderful and brilliant plan. I am so excited to start!"
-    negative_text = "I am concerned this might be a terrible mistake with many problems."
-    neutral_text = "The system is currently operational."
-
-    # 2. Get the emotional overlay for each sentence
-    print(f"\nAnalyzing: '{positive_text}'")
-    positive_result = get_emotional_overlay(positive_text)
-    print(f"Result: {positive_result}")
-
-    print(f"\nAnalyzing: '{negative_text}'")
-    negative_result = get_emotional_overlay(negative_text)
-    print(f"Result: {negative_result}")
-
-    print(f"\nAnalyzing: '{neutral_text}'")
-    neutral_result = get_emotional_overlay(neutral_text)
-    print(f"Result: {neutral_result}")
-
-    # 3. Test the reusability of the pipeline (it should not re-initialize)
-    print("\n--- Verifying model is not reloaded ---")
-    print("Analyzing a second positive text...")
-    second_positive_result = get_emotional_overlay("I feel very optimistic about our progress.")
-    print(f"Result: {second_positive_result}")
-    print("Notice the 'Initializing...' message did not appear a second time.")
+    sample_text = "I am so happy you're here, this is a wonderful surprise and I feel so much love!"
+    
+    print(f"\nAnalyzing: '{sample_text}'")
+    emotions = get_emotional_overlay(sample_text)
+    
+    print("\nDetected Emotions (threshold > 0.3):")
+    import pprint
+    pprint.pprint(emotions)
+    
+    # Verify that the expected emotions are present
+    labels = {e['label'] for e in emotions}
+    assert 'joy' in labels
+    assert 'love' in labels
+    assert 'surprise' in labels
+    
+    print("\n✅ Test successful.")
