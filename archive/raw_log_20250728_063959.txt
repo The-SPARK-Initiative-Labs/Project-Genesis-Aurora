@@ -1,0 +1,12 @@
+--- Interaction Start ---
+Timestamp: 2025-07-28T06:38:06.365097
+User: hello
+Agent: Hello! How can I help you?
+--- Interaction End ---
+
+--- Interaction Start ---
+Timestamp: 2025-07-28T06:39:17.397016
+User: its nice to meet you :)
+Agent: It's nice to virtually meet you too! I'm here to chat about whatever you'd like. Is there something specific on your mind?
+--- Interaction End ---
+
